@@ -52,31 +52,32 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Generate Gradle Wrapper (if missing)
+      - name: Install Gradle 9.3.1
+        run: |
+          GRADLE_VERSION="9.3.1"
+          echo "Installing Gradle $GRADLE_VERSION..."
+
+          wget -q "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" -O /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /opt/
+
+          GRADLE_HOME="/opt/gradle-${GRADLE_VERSION}"
+          echo "$GRADLE_HOME/bin" >> $GITHUB_PATH
+
+          export PATH="$GRADLE_HOME/bin:$PATH"
+          gradle --version
+
+      - name: Generate Gradle Wrapper
         working-directory: ./project
         run: |
           if [ -f "gradlew" ]; then
-            echo "gradlew already exists - skipping wrapper generation"
+            echo "gradlew already exists"
             exit 0
           fi
 
-          echo "gradlew missing! Generating Gradle Wrapper..."
+          echo "Generating Gradle Wrapper..."
+          gradle wrapper --gradle-version 9.3.1
 
-          GRADLE_VERSION="9.3.1"
-
-          echo "Using Gradle version: $GRADLE_VERSION"
-
-          mkdir -p gradle/wrapper
-
-          printf '%s\n'             'distributionBase=GRADLE_USER_HOME'             'distributionPath=wrapper/dists'             "distributionUrl=https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip"             'networkTimeout=10000'             'validateDistributionUrl=true'             'zipStoreBase=GRADLE_USER_HOME'             'zipStorePath=wrapper/dists'             > gradle/wrapper/gradle-wrapper.properties
-
-          curl -fsSL -o gradlew "https://raw.githubusercontent.com/gradle/gradle/v${GRADLE_VERSION}.0/gradlew"
-          curl -fsSL -o gradlew.bat "https://raw.githubusercontent.com/gradle/gradle/v${GRADLE_VERSION}.0/gradlew.bat"
-          curl -fsSL -o gradle/wrapper/gradle-wrapper.jar "https://raw.githubusercontent.com/gradle/gradle/v${GRADLE_VERSION}.0/gradle/wrapper/gradle-wrapper.jar"
-
-          chmod +x gradlew
-
-          echo "Gradle Wrapper generated!"
+          ls -la gradlew
           cat gradle/wrapper/gradle-wrapper.properties
 
       - name: Cache Gradle
@@ -102,4 +103,3 @@ jobs:
           name: debug-apk
           path: project/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-
