@@ -62,35 +62,22 @@ jobs:
 
           echo "gradlew missing! Generating Gradle Wrapper..."
 
-          GRADLE_VERSION="8.5"
-          if [ -f "gradle/libs.versions.toml" ]; then
-            DETECTED=$(grep -oE 'gradleVersion[[:space:]]*=[[:space:]]*"[^"]+' gradle/libs.versions.toml | head -n 1 | sed 's/.*"//')
-            if [ -n "$DETECTED" ]; then
-              GRADLE_VERSION="$DETECTED"
-            fi
-          fi
+          GRADLE_VERSION="9.3.1"
 
           echo "Using Gradle version: $GRADLE_VERSION"
 
           mkdir -p gradle/wrapper
 
-          # Create gradle-wrapper.properties
           printf '%s\n'             'distributionBase=GRADLE_USER_HOME'             'distributionPath=wrapper/dists'             "distributionUrl=https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip"             'networkTimeout=10000'             'validateDistributionUrl=true'             'zipStoreBase=GRADLE_USER_HOME'             'zipStorePath=wrapper/dists'             > gradle/wrapper/gradle-wrapper.properties
 
-          # Download official gradlew script
           curl -fsSL -o gradlew "https://raw.githubusercontent.com/gradle/gradle/v${GRADLE_VERSION}.0/gradlew"
-
-          # Download official gradlew.bat
           curl -fsSL -o gradlew.bat "https://raw.githubusercontent.com/gradle/gradle/v${GRADLE_VERSION}.0/gradlew.bat"
-
-          # Download gradle-wrapper.jar
           curl -fsSL -o gradle/wrapper/gradle-wrapper.jar "https://raw.githubusercontent.com/gradle/gradle/v${GRADLE_VERSION}.0/gradle/wrapper/gradle-wrapper.jar"
 
           chmod +x gradlew
 
           echo "Gradle Wrapper generated!"
-          ls -la gradlew
-          ls -la gradle/wrapper/
+          cat gradle/wrapper/gradle-wrapper.properties
 
       - name: Cache Gradle
         uses: actions/cache@v4
@@ -115,3 +102,4 @@ jobs:
           name: debug-apk
           path: project/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
